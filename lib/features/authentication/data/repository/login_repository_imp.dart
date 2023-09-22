@@ -98,15 +98,26 @@ class LoginRepositoryImp extends LoginRepository{
     final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
     final bool canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
     if(canAuthenticate){
+
       try {
-        final bool didAuthenticate = await auth.authenticate(
+        final List<BiometricType> availableBiometrics =
+        await auth.getAvailableBiometrics();
+        log(availableBiometrics.toString());
+        for (var element in availableBiometrics) {
+          log(element.name);
+        }
+        if (availableBiometrics.isNotEmpty) {
+          final bool didAuthenticate = await auth.authenticate(
             localizedReason: 'Please authenticate to save login',
             options: const AuthenticationOptions(useErrorDialogs: false),
-        );
-        if(didAuthenticate){
-          return null;
+          );
+          if(didAuthenticate){
+            return null;
+          }else{
+            return DEFAULT_FAILURE_MESSAGE;
+          }
         }else{
-          return DEFAULT_FAILURE_MESSAGE;
+          return "Please Set Finger Print to enable it";
         }
       } on PlatformException catch (e) {
         return DEFAULT_FAILURE_MESSAGE;
